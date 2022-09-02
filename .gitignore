@@ -1,0 +1,12 @@
+*.txt
+*.log
+cmake_install.cmake
+*.mak
+Makefile
+*.dat
+*.plot
+*.prm
+CMakeFiles/
+to_gates
+*Individual.*
+to_gates.cpp

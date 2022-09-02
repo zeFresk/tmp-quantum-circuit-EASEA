@@ -1,0 +1,47 @@
+
+cmake_minimum_required(VERSION 3.9) # 3.9: OpenMP improved support
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
+set(EZ_ROOT $ENV{EZ_PATH})
+
+project(to_gates)
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release")
+endif()
+
+file(GLOB to_gates_src ${CMAKE_SOURCE_DIR}/*.cpp ${CMAKE_SOURCE_DIR}/*.c)
+add_executable(to_gates ${to_gates_src})
+
+target_compile_features(to_gates PUBLIC cxx_std_20)
+target_compile_options(to_gates PUBLIC
+	$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-g -fconstexpr-ops-limit=10000000000 -Wall -Wextra -pedantic>
+	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Release>>:/O2 /W3>
+	$<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Release>>:-O3 -march=native -mtune=native>
+	$<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/W4 /DEBUG:FULL>
+	$<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Debug>>:-O0 -g -Wall -Wextra -pedantic -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr>
+	)
+target_link_options(to_gates PUBLIC
+	$<$<AND:$<CONFIG:Debug>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-fsanitize=address -fsanitize=undefined -fno-sanitize=vptr>
+	)
+
+find_library(libeasea_LIB
+	NAMES libeasea easea
+	HINTS ${EZ_ROOT} ${CMAKE_INSTALL_PREFIX}/easena ${CMAKE_INSTALL_PREFIX}/EASENA
+	PATH_SUFFIXES lib libeasea easea easena)
+find_path(libeasea_INCLUDE
+	NAMES CLogger.h
+	HINTS ${EZ_ROOT}/libeasea ${CMAKE_INSTALL_PREFIX}/*/libeasea
+	PATH_SUFFIXES include easena libeasea)
+find_package(Boost)
+find_package(OpenMP)
+
+target_include_directories(to_gates PUBLIC ${Boost_INCLUDE_DIRS} ${libeasea_INCLUDE})
+target_link_libraries(to_gates PUBLIC ${libeasea_LIB} OpenMP::OpenMP_CXX $<$<CXX_COMPILER_ID:MSVC>:winmm>)
+
+target_include_directories(to_gates PUBLIC ${CMAKE_SOURCE_DIR}/light-gebra/include)
+

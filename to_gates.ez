@@ -1,0 +1,309 @@
+/**
+ * Convert Unitary matrix to sequence of gates
+ */
+\User declarations :
+
+#include "fastmaths.hpp"
+#include "maths/abs.hpp"
+#include "matrix.hpp"
+#include "matrix/initializers.hpp"
+#include "matrix/kronecker.hpp"
+
+#include "gates.hpp"
+#include "quantum_circuit.hpp"
+#include "dispatcher.hpp"
+#include "cnot.hpp"
+#include "mapping.hpp"
+#include "evaluate.hpp"
+#include "serialization.hpp"
+
+#include <vector>
+#include <array>
+#include <iomanip>
+#include <bitset>
+#include <tuple>
+#include <complex>
+
+//#include <fenv.h>
+
+static constexpr auto prctMut = 20;
+static constexpr auto ins = 3;
+static constexpr auto outs = 0;
+static constexpr auto tmps = 0;
+static constexpr auto nb_qubits = ins + outs + tmps;
+static constexpr auto max_size = 64;
+
+
+static constexpr std::array<Gate, 6> monos = {ug_h, ug_s, ug_t, ug_tdg, ug_x, ug_z};
+static constexpr std::array<std::string_view, 6> monos_str = {"H", "S", "T", "Tdg", "X", "Z"};
+
+//static constexpr std::array<Gate, 4> monos = {ug_h, ug_t, ug_tdg, ug_s};
+//static constexpr std::array<std::string_view, 4> monos_str = {"H", "T", "Tdg", "S"};
+
+
+//static constexpr std::array<Gate, 2> monos = {ug_i, ug_x};
+//static constexpr std::array<std::string_view, 2> monos_str = {"I", "X"};
+
+
+static constexpr Dispatcher<cnot<nb_qubits>> dispatcher{};
+static constexpr std::array<std::string_view, 1> bi_str = {"CNOT"};
+
+using Circuit = QuantumCircuit<nb_qubits, monos.size(), dispatcher, max_size>;
+using value_t = std::complex<float>;
+static constexpr auto map_str = std::make_tuple(monos_str, bi_str);
+
+//static constexpr std::array<value_t, pow(2, outs)> zero{1.f, 0.f}, one{0.f, 1.f};
+//static constexpr std::array<std::array<value_t, pow(2, outs)>, pow(2, ins)> target_map{one, zero, zero, zero};
+//static constexpr auto target_matrix = target_from_map<monos[0].lines(), ins, outs, tmps>(target_map);
+
+static auto target_qc = kron(ug_i, ug_i, ug_h) * cnot<3>(1, 2) * kron(ug_i, ug_i, ug_tdg) * cnot<3>(0, 2) * kron(ug_i, ug_i, ug_t) * cnot<3>(1, 2) * kron(ug_i, ug_i, ug_tdg) *
+	cnot<3>(0,2) * kron(ug_i, ug_t, ug_t) * cnot<3>(0, 1) * kron(ug_t, ug_tdg, ug_h) * cnot<3>(0,1);
+
+static constexpr auto target_matrix = //kron(ug_i, ug_h) * cnot<nb_qubits>(0, 1) * kron(ug_i, ug_h);
+//cnot<2, 2, 1>();
+				      /*Matrix<value_t, 8, 8>{
+					      {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 000
+					      {1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 001
+					      {0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 010
+					      {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f}, // 011
+					      {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f}, // 100
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f}, // 101
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f}, // 110
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f}}; // 111*/
+
+					Matrix<value_t, 8, 8>{
+					      {1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 000
+					      {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 001
+					      {0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 010
+					      {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f}, // 011
+					      {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f}, // 100
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f}, // 101
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f}, // 110
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f}}; // 111*/
+
+					/*Matrix<value_t, 16, 16>{
+					      {1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0000
+					      {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0001
+					      {0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0010
+					      {0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0011
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0100 -> 0101
+					      {0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0101 -> 0100
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0110 -> 0111
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 0111 -> 0110
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 1000 -> 1001
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 1001 -> 1000
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f}, // 1010 -> 1011
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f}, // 1011 -> 1010
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f}, // 1100 -> 1110
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f}, // 1101 -> 1111
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f}, // 1110 -> 1100
+					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f} // 1111 -> 1101
+					      };*/
+
+//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::norm(lhs-rhs);};
+//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs)) ;};
+static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) < 1e-3 && std::abs(std::imag(lhs) - std::imag(rhs)) < 1e-3 ? 0.f : 1.f;};
+static constexpr auto penalty = [](value_t const& notz){return pow(std::norm(notz), 2);};
+
+\end
+
+\User functions :
+
+\end
+
+\Before everything else function :
+
+//feenableexcept(FE_INVALID | FE_OVERFLOW);
+
+/*std::cout << "CNOT loop:\n";
+for (int ctrl = 0; ctrl < nb_qubits; ++ctrl) {
+	for (int tar = 0; tar < nb_qubits; ++tar) {
+		if (ctrl == tar)
+			continue;
+		std::cout << "CNOT(ctrl=" << ctrl << ", tar=" << tar << "): \n";
+		auto g = cnot<nb_qubits>(ctrl, tar);
+		for (int i = 0; i < g.lines(); ++i) {
+			for (int j = 0; j < g.columns(); ++j) {
+				std::cout << std::setprecision(4) << g(i, j) << " ";
+			}
+			std::cout << "\n";
+		}
+	}
+}
+
+std::cout << "CNOT(0, 2) => (swap o I) * (I o CNOT) * (swap o I) ?\n";
+
+auto mat = kron(swapg, ug_i) * kron(ug_i, cnotg) * kron(swapg, ug_i);
+
+for (int i = 0; i < mat.lines(); ++i) {
+	for (int j = 0; j < mat.columns(); ++j) {
+		std::cout << std::setprecision(4) << mat(i, j) << " ";
+	}
+	std::cout << "\n";
+}*/
+
+
+//std::cout << "Mapping to approximate:\n";
+
+/*for (int i = 0; i < pow(2, ins); ++i) {
+	std::cout << std::bitset<ins>(i) << " = ";
+	for (int j = 0; j < pow(2, outs); ++j) {
+		if (j > 0)
+			std::cout << " + ";
+
+		std::cout << "(" << target_map[i][j] << ") * |" << std::bitset<outs>(j) << ">";
+	}
+	std::cout << "\n";
+}*/
+
+std::cout << "As unitary matrix (Mat):\n";
+
+auto mat = target_matrix;
+
+for (int i = 0; i < mat.lines(); ++i) {
+	for (int j = 0; j < mat.columns(); ++j) {
+		std::cout << std::setprecision(4) << mat(i, j) << " ";
+	}
+	std::cout << "\n";
+}
+
+/*std::cout << "As unitary matrix (QC):\n";
+
+mat = target_qc;
+
+for (int i = 0; i < mat.lines(); ++i) {
+	for (int j = 0; j < mat.columns(); ++j) {
+		std::cout << std::setprecision(4) << mat(i, j) << " ";
+	}
+	std::cout << "\n";
+}*/
+
+//std::cerr << "DBG: evaluate(cnot, target) = " << evaluate<costf>(cnot<2, 1, 2>(), target_matrix) << "\n";
+//std::cerr << "DBG: evaluate(target_qc, target_matrix) = " << evaluate<costf>(target_qc, target_matrix) << "\n";
+
+\end
+
+\After everything else function :
+	std::cout << "Best individual has " << bBest->qc.biqsize() << " CNOTs:\n" << std::endl;
+	bBest->qc.print(std::cout, map_str);
+
+	std::cout << "Final Matrix:\n" << std::endl;
+
+	auto mat = bBest->qc.matrix(monos);
+
+	for (int i = 0; i < mat.lines(); ++i) {
+		for (int j = 0; j < mat.columns(); ++j) {
+			std::cout << std::setprecision(4) << mat(i, j) << " ";
+		}
+		std::cout << "\n";
+	}
+\end
+
+\At the beginning of each generation function :
+\end
+
+\At the end of each generation function :
+\end
+
+\At each generation before reduce function :
+\end
+
+\User classes : 
+
+GenomeClass {
+	 Circuit qc;
+}
+
+\end
+
+\GenomeClass::display :
+\end
+
+\GenomeClass::initialiser : 
+
+
+\end
+
+
+
+\GenomeClass::crossover : 
+
+child.qc = parent1.qc;
+child.qc.crossover(parent2.qc);
+
+\end
+
+\GenomeClass::mutator : 
+
+auto nb = (Genome.qc.size() * prctMut) / 100;
+auto re = random(0, 1+nb);
+Genome.qc.mutate(re);
+
+//decltype(Genome.qc) ng{};
+//Genome.qc = std::move(ng);
+
+//auto nqc = decltype(Genome.qc){};
+//Genome.qc.crossover(nqc);
+
+
+\end
+
+
+
+\GenomeClass::evaluator : // Returns the score
+
+auto mat = Genome.qc.matrix(monos);
+auto len = Genome.qc.size();
+
+/*if (is_id(mat)) {
+	return 2.f * pow(pow(2.f, nb_qubits), 2);
+} else {*/
+	float score = ::evaluate<costf>(mat, target_matrix);
+	auto helper = 0.f; //pow(2.f * (6.f - Genome.qc.biqsize()), 2);
+	if (score > 1e-3 && len <= max_size) {
+		helper -= static_cast<float>(len)/static_cast<float>(max_size+1);
+	} else {
+		helper += pow(len-max_size, 2);
+	}
+	if (score < 1e-3) {
+		score -= 1.f / static_cast<float>(len);
+		score -=  1.f / pow(Genome.qc.biqsize(), 2);
+		return score;
+	} else {
+		return score + helper; //static_cast<float>(len * len);
+	}
+//}
+
+\end
+
+\User Makefile options : 
+\end
+
+\Default run parameters : // Please let the parameters appear in this order
+Number of generations : 1000 // NB_GEN
+Time limit : 0 // In seconds, 0 to deactivate
+Population size : 1000000 // POP_SIZE
+Offspring size : 100% // 40%
+Mutation probability : 0.3 // MUT_PROB
+Crossover probability : 1 // XOVER_PROB
+Evaluator goal : minimise // Maximise
+Selection operator: Tournament 2.7
+Surviving parents : 1 // percentage or absolute
+Surviving offspring : 100 % Reduce parents
+operator: Tournament 2 Reduce offspring
+operator: Tournament 2 Final reduce
+operator: Tournament 2
+Elitism : Strong // Weak or Strong
+Elite : 1
+Print stats : true // Default: 1
+Generate csv stats file: false
+Generate gnuplot script : false
+Generate R script : false
+Plot stats : true // Default: 0
+Remote island model: false
+IP file : ip.txt // File containing all the remote island's IP
+Server port : 2929
+Migration probability : 0.3
+Save population : true
+Start from file : false
+\end

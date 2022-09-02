@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition",
+  "command": "/usr/bin/c++  -I/home/zefresk/Nextcloud/programmation/cpp/easea/nosync_install/easena/libeasea/include -I/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/light-gebra/include -g -O0 -g -Wall -Wextra -pedantic -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr -fopenmp -std=gnu++20 -o CMakeFiles/to_gates.dir/to_gates.cpp.o -c /home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/to_gates.cpp",
+  "file": "/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/to_gates.cpp"
+},
+{
+  "directory": "/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition",
+  "command": "/usr/bin/c++  -I/home/zefresk/Nextcloud/programmation/cpp/easea/nosync_install/easena/libeasea/include -I/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/light-gebra/include -g -O0 -g -Wall -Wextra -pedantic -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr -fopenmp -std=gnu++20 -o CMakeFiles/to_gates.dir/to_gatesIndividual.cpp.o -c /home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/to_gatesIndividual.cpp",
+  "file": "/home/zefresk/Nextcloud/programmation/easea/unitary_decomposition/to_gatesIndividual.cpp"
+}
+]
