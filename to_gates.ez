@@ -274,7 +274,7 @@ if (is_id(mat)) {
 	} else {
 		return score + helper; //static_cast<float>(len * len);
 	}
-//}
+}
 
 \end
 
