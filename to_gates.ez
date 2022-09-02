@@ -100,9 +100,10 @@ static constexpr auto target_matrix = //kron(ug_i, ug_h) * cnot<nb_qubits>(0, 1)
 					      {0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f} // 1111 -> 1101
 					      };*/
 
-static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::norm(lhs-rhs);};
+//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::norm(lhs-rhs);};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::norm(lhs-rhs), 2);};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs)), 2) ;};
+static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs));};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) < 1e-3 && std::abs(std::imag(lhs) - std::imag(rhs)) < 1e-3 ? 0.f : 1.f;};
 static constexpr auto penalty = [](value_t const& notz){return pow(std::norm(notz), 2);};
 
