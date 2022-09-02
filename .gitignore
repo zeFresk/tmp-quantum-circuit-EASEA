@@ -5,6 +5,7 @@ cmake_install.cmake
 Makefile
 *.dat
 *.plot
+*.pop
 *.prm
 CMakeFiles/
 to_gates
