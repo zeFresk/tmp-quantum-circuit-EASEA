@@ -1,0 +1,3 @@
+[submodule "light-gebra"]
+	path = light-gebra
+	url = https://github.com/zeFresk/light-gebra.git

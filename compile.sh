@@ -9,7 +9,7 @@ echo "Updating git submodules..."
 git submodule foreach git pull
 
 echo "Running easena..."
-$EZ_PATH/easena to_gates.ez
+$EZ_PATH/bin/easena to_gates.ez
 
 echo "Overriding CMakeLists..."
 cp CMakeLists.txt.bk CMakeLists.txt
