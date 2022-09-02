@@ -34,8 +34,8 @@ static constexpr auto nb_qubits = ins + outs + tmps;
 static constexpr auto max_size = 64;
 
 
-static constexpr std::array<Gate, 6> monos = {ug_h, ug_s, ug_t, ug_tdg, ug_x, ug_z};
-static constexpr std::array<std::string_view, 6> monos_str = {"H", "S", "T", "Tdg", "X", "Z"};
+static constexpr std::array<Gate, 5> monos = {ug_i, ug_h, ug_s, ug_t, ug_tdg};
+static constexpr std::array<std::string_view, 5> monos_str = {"I", "H", "S", "T", "Tdg"};
 
 //static constexpr std::array<Gate, 4> monos = {ug_h, ug_t, ug_tdg, ug_s};
 //static constexpr std::array<std::string_view, 4> monos_str = {"H", "T", "Tdg", "S"};
@@ -101,8 +101,9 @@ static constexpr auto target_matrix = //kron(ug_i, ug_h) * cnot<nb_qubits>(0, 1)
 					      };*/
 
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::norm(lhs-rhs);};
+static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::norm(lhs-rhs), 2);};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs)) ;};
-static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) < 1e-3 && std::abs(std::imag(lhs) - std::imag(rhs)) < 1e-3 ? 0.f : 1.f;};
+//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) < 1e-3 && std::abs(std::imag(lhs) - std::imag(rhs)) < 1e-3 ? 0.f : 1.f;};
 static constexpr auto penalty = [](value_t const& notz){return pow(std::norm(notz), 2);};
 
 \end
@@ -255,15 +256,16 @@ Genome.qc.mutate(re);
 auto mat = Genome.qc.matrix(monos);
 auto len = Genome.qc.size();
 
-/*if (is_id(mat)) {
+if (is_id(mat)) {
 	return 2.f * pow(pow(2.f, nb_qubits), 2);
-} else {*/
+} else {
 	float score = ::evaluate<costf>(mat, target_matrix);
 	auto helper = 0.f; //pow(2.f * (6.f - Genome.qc.biqsize()), 2);
-	if (score > 1e-3 && len <= max_size) {
-		helper -= static_cast<float>(len)/static_cast<float>(max_size+1);
+	if (score > 1e-3 && len < max_size/2) {
+		helper += pow((max_size / 2) - len, 2);
+		//helper -= static_cast<float>(len)/static_cast<float>(max_size+1); // to push EA to make long circuits
 	} else {
-		helper += pow(len-max_size, 2);
+		helper += pow(len - max_size, 2);
 	}
 	if (score < 1e-3) {
 		score -= 1.f / static_cast<float>(len);
