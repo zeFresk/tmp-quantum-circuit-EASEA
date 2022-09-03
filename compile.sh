@@ -5,7 +5,12 @@ if [[ "$EZ_PATH" == "" ]]; then
 	exit 1
 fi
 
+echo "Initializing git submodules..."
+git submodule update --init --recursive
+
 echo "Updating git submodules..."
+git submodule update --recursive --remote
+git pull --recurse-submodules
 git submodule foreach git pull
 
 echo "Running easena..."
