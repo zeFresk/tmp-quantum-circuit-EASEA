@@ -303,10 +303,10 @@ Generate csv stats file: false
 Generate gnuplot script : false
 Generate R script : false
 Plot stats : true // Default: 0
-Remote island model: false
+Remote island model: true
 IP file : ip.txt // File containing all the remote island's IP
 Server port : 2929
 Migration probability : 0.3
-Save population : true
+Save population : false
 Start from file : false
 \end
