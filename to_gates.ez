@@ -283,14 +283,14 @@ if (is_id(mat)) {
 \end
 
 \Default run parameters : // Please let the parameters appear in this order
-Number of generations : 1000 // NB_GEN
+Number of generations : 300 // NB_GEN
 Time limit : 0 // In seconds, 0 to deactivate
 Population size : 1000000 // POP_SIZE
 Offspring size : 100% // 40%
 Mutation probability : 0.3 // MUT_PROB
 Crossover probability : 1 // XOVER_PROB
 Evaluator goal : minimise // Maximise
-Selection operator: Tournament 2.7
+Selection operator: Tournament 4.5
 Surviving parents : 1 // percentage or absolute
 Surviving offspring : 100 % Reduce parents
 operator: Tournament 2 Reduce offspring
