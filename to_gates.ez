@@ -285,12 +285,12 @@ if (is_id(mat)) {
 \Default run parameters : // Please let the parameters appear in this order
 Number of generations : 300 // NB_GEN
 Time limit : 0 // In seconds, 0 to deactivate
-Population size : 1000000 // POP_SIZE
+Population size : 2000000 // POP_SIZE
 Offspring size : 100% // 40%
 Mutation probability : 0.3 // MUT_PROB
 Crossover probability : 1 // XOVER_PROB
 Evaluator goal : minimise // Maximise
-Selection operator: Tournament 4.5
+Selection operator: Tournament 6.5
 Surviving parents : 1 // percentage or absolute
 Surviving offspring : 100 % Reduce parents
 operator: Tournament 2 Reduce offspring
@@ -306,7 +306,7 @@ Plot stats : true // Default: 0
 Remote island model: true
 IP file : ip.txt // File containing all the remote island's IP
 Server port : 2929
-Migration probability : 0.3
+Migration probability : 0.5
 Save population : false
 Start from file : false
 \end
