@@ -62,7 +62,6 @@ class QuantumCircuit {
     public:
 	QuantumCircuit() {
 		cols.reserve(std::max(reserved_size, 4 * max_size));
-		randomize(1, max_size / 2); //reserved_size);
 	}
 
 	using matrix_t = std::remove_cvref_t<decltype(dispatcher(0, 0, 0))>;
@@ -81,7 +80,7 @@ class QuantumCircuit {
 
 	decltype(cols.cend()) end() const { return cols.cend(); }
 
-	void randomize(int minlen, int maxlen) {
+	void rd(int minlen, int maxlen) {
 		auto len = fastrand<unsigned>(minlen, maxlen);
 		cols.resize(len);
 		for (auto& c : cols) {
@@ -147,6 +146,7 @@ class QuantumCircuit {
 
 	//template <auto n, auto monoq_gates, auto dispatcher>
 	friend std::istream& operator>>(std::istream& is, QuantumCircuit<n, monoq_gates, dispatcher, max_size>& qc) {
+		qc.cols.resize(0);
 		CircuitColumn<n> col;
 		while (is >> col)
 			qc.cols.push_back(std::move(col));

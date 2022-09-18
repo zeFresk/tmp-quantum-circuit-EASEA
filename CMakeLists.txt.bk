@@ -26,7 +26,7 @@ target_compile_options(to_gates PUBLIC
 	$<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Debug>>:-O0 -g -Wall -Wextra -pedantic -fsanitize=address -fsanitize=undefined -fno-sanitize=vptr>
 	)
 target_link_options(to_gates PUBLIC
-	$<$<AND:$<CONFIG:Debug>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-fsanitize=address -fsanitize=undefined -fno-sanitize=vptr>
+	$<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<CONFIG:Debug>>:-fsanitize=address -fsanitize=undefined -fno-sanitize=vptr>
 	)
 
 find_library(libeasea_LIB

@@ -20,7 +20,7 @@ echo "Overriding CMakeLists..."
 cp CMakeLists.txt.bk CMakeLists.txt
 
 echo "Configuring CMake..."
-cmake -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_BUILD_TYPE=Debug .
 
 echo "Building executable..."
 cmake --build .
