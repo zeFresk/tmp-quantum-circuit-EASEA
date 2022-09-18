@@ -23,6 +23,7 @@
 #include <bitset>
 #include <tuple>
 #include <complex>
+#include <algorithm>
 
 //#include <fenv.h>
 
@@ -183,6 +184,33 @@ for (int i = 0; i < mat.lines(); ++i) {
 //std::cerr << "DBG: evaluate(cnot, target) = " << evaluate<costf>(cnot<2, 1, 2>(), target_matrix) << "\n";
 //std::cerr << "DBG: evaluate(target_qc, target_matrix) = " << evaluate<costf>(target_qc, target_matrix) << "\n";
 
+// check serialization
+std::cout << "Testing serialization...\n";
+Circuit qc_in{};
+qc_in.rd(15, 17);
+std::stringstream ss, ser1, ser2;
+ss << qc_in;
+std::cout << "Random circuit exported as '" << ss.str() << "'\n";
+Circuit qc_out{};
+ss >> qc_out;
+
+ser1 << qc_in;
+ser2 << qc_out;
+
+std::cout << "Original: " << ser1.str() << "\nCopy: " << ser2.str() << "\n";
+std::cout << "Match ? " << (ser1.str() == ser2.str()) << std::endl;
+
+assert(ser1.str() == ser2.str());
+
+auto mat_in = qc_in.matrix(monos);
+auto mat_out = qc_out.matrix(monos);
+
+std::cout << "\nMatrix are the same ? ";
+bool meq = std::equal(mat_in.begin(), mat_in.end(), mat_out.begin());
+std::cout << meq << std::endl;
+assert(meq);
+
+
 \end
 
 \After everything else function :
@@ -223,6 +251,7 @@ GenomeClass {
 
 \GenomeClass::initialiser : 
 
+Genome.qc.rd(1, max_size / 2); //reserved_size);
 
 \end
 

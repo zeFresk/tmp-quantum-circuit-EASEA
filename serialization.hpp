@@ -12,10 +12,10 @@ std::istream& operator>>(std::istream& is, Biqubit& b);
 
 template <auto n>
 std::ostream& operator<<(std::ostream& os, CircuitColumn<n> const& c) {
-	os << c.is_monoqubit << " ";
+	os << (c.is_monoqubit ? 1 : 2) << " ";
 	if (c.is_monoqubit) {
 		for (auto const& g : c.gates)
-			os << static_cast<unsigned>(g) << " ";
+			os << static_cast<int>(g) << " ";
 	} else {
 		os << c.biqubit << " ";
 	}
@@ -24,12 +24,14 @@ std::ostream& operator<<(std::ostream& os, CircuitColumn<n> const& c) {
 
 template <auto n>
 std::istream& operator>>(std::istream& is, CircuitColumn<n>& c) {
-	bool tmp;
+	int tmp;
 	is >> tmp;
-	c.is_monoqubit = tmp;
+	c.is_monoqubit = (tmp == 1);
 	if (c.is_monoqubit) {
-		for (auto& g : c.gates)
-			is >> g;
+		for (auto& g : c.gates) {
+			is >> tmp;
+			g = tmp;
+		}
 	} else {
 		is >> c.biqubit;
 	}
@@ -44,12 +46,13 @@ std::ostream& operator<<(std::ostream& os, QuantumCircuit<n, monoq_gates, dispat
 	return os;
 }
 
-template <auto n, auto monoq_gates, auto dispatcher, auto max_size>
+/*template <auto n, auto monoq_gates, auto dispatcher, auto max_size>
 std::istream& operator>>(std::istream& is, QuantumCircuit<n, monoq_gates, dispatcher, max_size>& qc) {
+	qc.clear();
 	CircuitColumn<n> col;
 	while (is >> col)
 		qc.cols.push_back(std::move(col));
 	return is;
-}
+}*/
 
 #endif
