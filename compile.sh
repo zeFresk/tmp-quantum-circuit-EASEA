@@ -6,6 +6,7 @@ if [[ "$EZ_PATH" == "" ]]; then
 fi
 
 echo "Initializing git submodules..."
+git submodule init
 git submodule update --init --recursive
 
 echo "Updating git submodules..."
