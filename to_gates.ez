@@ -340,7 +340,7 @@ Plot stats : true // Default: 0
 Remote island model: true
 IP file : ip.txt // File containing all the remote island's IP
 Server port : 2929
-Migration probability : 0.5
+Migration probability : 0.10
 Save population : false
 Start from file : false
 \end
