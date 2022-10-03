@@ -27,7 +27,7 @@
 
 //#include <fenv.h>
 
-static constexpr auto prctMut = 20;
+static constexpr auto prctMut = 10;
 static constexpr auto ins = 3;
 static constexpr auto outs = 0;
 static constexpr auto tmps = 0;
@@ -266,7 +266,7 @@ child.qc.crossover(parent2.qc);
 
 \GenomeClass::mutator : 
 
-if (random(1, 10) <= 8) {
+if (random(1, 10) <= 7) {
 	auto nb = (Genome.qc.size() * prctMut) / 100;
 	auto re = random(0, 1+nb);
 	Genome.qc.mutate(re);
@@ -321,10 +321,10 @@ Number of generations : 300 // NB_GEN
 Time limit : 0 // In seconds, 0 to deactivate
 Population size : 2000000 // POP_SIZE
 Offspring size : 100% // 40%
-Mutation probability : 0.4 // MUT_PROB
+Mutation probability : 0.5 // MUT_PROB
 Crossover probability : 1 // XOVER_PROB
 Evaluator goal : minimise // Maximise
-Selection operator: Tournament 6.5
+Selection operator: Tournament 3
 Surviving parents : 1 // percentage or absolute
 Surviving offspring : 100 % Reduce parents
 operator: Tournament 2 Reduce offspring
