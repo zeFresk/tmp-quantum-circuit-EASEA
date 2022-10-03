@@ -103,8 +103,8 @@ static constexpr auto target_matrix = //kron(ug_i, ug_h) * cnot<nb_qubits>(0, 1)
 
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::norm(lhs-rhs);};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::norm(lhs-rhs), 2);};
-//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs)), 2) ;};
-static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs));};
+static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return pow(1.f + std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs)), 2) - 1.f ;};
+//static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) + std::abs(std::imag(lhs) - std::imag(rhs));};
 //static constexpr auto costf = [](value_t const& lhs, value_t const& rhs){return std::abs(std::real(lhs) - std::real(rhs)) < 1e-3 && std::abs(std::imag(lhs) - std::imag(rhs)) < 1e-3 ? 0.f : 1.f;};
 static constexpr auto penalty = [](value_t const& notz){return pow(std::norm(notz), 2);};
 
@@ -206,7 +206,7 @@ auto mat_in = qc_in.matrix(monos);
 auto mat_out = qc_out.matrix(monos);
 
 std::cout << "\nMatrix are the same ? ";
-bool meq = std::equal(mat_in.begin(), mat_in.end(), mat_out.begin());
+bool meq = std::equal(mat_in.begin(), mat_in.end(), mat_out.begin(), [](auto const& lhs, auto const& rhs) { return std::abs(std::real(lhs) - std::real(rhs) + std::imag(lhs) - std::imag(rhs)) < 1e-6;});
 std::cout << meq << std::endl;
 assert(meq);
 
@@ -266,10 +266,14 @@ child.qc.crossover(parent2.qc);
 
 \GenomeClass::mutator : 
 
-auto nb = (Genome.qc.size() * prctMut) / 100;
-auto re = random(0, 1+nb);
-Genome.qc.mutate(re);
-
+if (random(1, 10) <= 8) {
+	auto nb = (Genome.qc.size() * prctMut) / 100;
+	auto re = random(0, 1+nb);
+	Genome.qc.mutate(re);
+} else {
+	Genome.qc = Circuit{};
+	Genome.qc.rd(1, max_size / 2);
+}
 //decltype(Genome.qc) ng{};
 //Genome.qc = std::move(ng);
 
@@ -285,21 +289,22 @@ Genome.qc.mutate(re);
 
 auto mat = Genome.qc.matrix(monos);
 auto len = Genome.qc.size();
+auto biq = Genome.qc.biqsize();
 
 if (is_id(mat)) {
 	return 2.f * pow(pow(2.f, nb_qubits), 2);
 } else {
 	float score = ::evaluate<costf>(mat, target_matrix);
-	auto helper = 0.f; //pow(2.f * (6.f - Genome.qc.biqsize()), 2);
+	auto helper = pow(2, std::max<int>(0, 6 - biq));
 	if (score > 1e-3 && len < max_size/2) {
 		helper += pow((max_size / 2) - len, 2);
 		//helper -= static_cast<float>(len)/static_cast<float>(max_size+1); // to push EA to make long circuits
-	} else {
+	} else if (score > 1e-3 && len >= max_size){
 		helper += pow(len - max_size, 2);
 	}
 	if (score < 1e-3) {
 		score -= 1.f / static_cast<float>(len);
-		score -=  1.f / pow(Genome.qc.biqsize(), 2);
+		score -=  1.f / pow(biq, 2);
 		return score;
 	} else {
 		return score + helper; //static_cast<float>(len * len);
@@ -316,7 +321,7 @@ Number of generations : 300 // NB_GEN
 Time limit : 0 // In seconds, 0 to deactivate
 Population size : 2000000 // POP_SIZE
 Offspring size : 100% // 40%
-Mutation probability : 0.3 // MUT_PROB
+Mutation probability : 0.4 // MUT_PROB
 Crossover probability : 1 // XOVER_PROB
 Evaluator goal : minimise // Maximise
 Selection operator: Tournament 6.5
